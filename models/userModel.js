@@ -15,9 +15,7 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     validate: [validator.isEmail, 'Please provide a valid email']
   },
-  photo: {
-    type: String
-  },
+  photo: String,
   role: {
     type: String,
     enum: ['user', 'guide', 'lead-guide', 'admin'],
@@ -41,7 +39,9 @@ const userSchema = new mongoose.Schema({
     }
   },
   passwordChangedAt: Date,
+  // Saving the reset token in the DB so that we can then compare it with Token user provided
   passwordResetToken: String,
+  // The reset need to expire after x amount of time
   passwordResetExpires: Date
 });
 
@@ -54,6 +54,18 @@ userSchema.pre('save', async function(next) {
 
   // Delete the passwordConfirm field
   this.passwordConfirm = undefined;
+  next();
+});
+
+// Updating the "changedPasswordAt" property via middleware
+//This function will run before a new document is saved
+userSchema.pre('save', async function(next) {
+  // We want to set the property when we modified the 'password' property or if the document is new
+  if (!this.isModified('password') || this.isNew) return next();
+
+  // Putting the passwordChangedAt 1s in the past to match time diff between JWT-DB
+  //ensuring the token always created after the password has been changed
+  this.passwordChangedAt = Date.now() - 1000;
   next();
 });
 
@@ -72,18 +84,24 @@ userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
   return false;
 };
 
+// Generating the random password reset token creating an instance method
 userSchema.methods.createPasswordResetToken = function() {
+  // Generate the Token which will be sent to the User to reset their password
   const resetToken = crypto.randomBytes(32).toString('hex');
 
   this.passwordResetToken = crypto
     .createHash('sha256')
+    // Updating the variable where the Token is stored, whatever string we want to encrypt
     .update(resetToken)
+    // Storing it as hexadecimal
     .digest('hex');
 
   console.log({ resetToken }, this.passwordResetToken);
 
+  // Setting up the expiring time
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
+  // Returning the plain text token bc that's the one we're gonna send through the email
   return resetToken;
 };
 
