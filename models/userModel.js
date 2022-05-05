@@ -42,7 +42,14 @@ const userSchema = new mongoose.Schema({
   // Saving the reset token in the DB so that we can then compare it with Token user provided
   passwordResetToken: String,
   // The reset need to expire after x amount of time
-  passwordResetExpires: Date
+  passwordResetExpires: Date,
+  // Property to set if an user delete it's account
+  active: {
+    type: Boolean,
+    default: true,
+    // Not showing this in the output
+    select: false
+  }
 });
 
 userSchema.pre('save', async function(next) {
@@ -66,6 +73,14 @@ userSchema.pre('save', async function(next) {
   // Putting the passwordChangedAt 1s in the past to match time diff between JWT-DB
   //ensuring the token always created after the password has been changed
   this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
+
+// Using query middleware to not show up data with active field to false
+//We use a regular expression bc we want middleware function to apply every query that starts with find
+userSchema.pre(/^find/, function(next) {
+  // this points to the current query
+  this.find({ active: { $ne: false } });
   next();
 });
 
