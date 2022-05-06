@@ -81,7 +81,36 @@ const tourSchema = new mongoose.Schema(
     secretTour: {
       type: Boolean,
       default: false
-    }
+    },
+    // MongoDB uses GeoJSON to specify geospatial data
+    startLocation: {
+      // We need to create a new object and have at least 2 field names type-coordinates
+      type: {
+        type: String,
+        // We can specify multiple geometries default point, but also there's polygons, lines
+        default: 'Point',
+        enum: ['Point']
+      },
+      // Array of coordinates
+      coordinates: [Number],
+      address: String,
+      description: String
+    },
+    // We will embed all the locations into the tour documents, in order to create new documents then embed them
+    //into another document we need to create an array
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point']
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number
+      }
+    ]
   },
   {
     toJSON: { virtuals: true },
