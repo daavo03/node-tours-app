@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const User = require('./userModel');
 // const validator = require('validator');
 
 const tourSchema = new mongoose.Schema(
@@ -110,7 +111,11 @@ const tourSchema = new mongoose.Schema(
         description: String,
         day: Number
       }
-    ]
+    ],
+    // Embedding user documents into the tour documents.
+    //Idea here is that when creating new Tour document, user will simply add an array of user IDs, then we will
+    //get the corresponding user documents and add them to our Tour documents
+    guides: Array
   },
   {
     toJSON: { virtuals: true },
@@ -143,6 +148,17 @@ tourSchema.pre(/^find/, function(next) {
   this.find({ secretTour: { $ne: true } });
 
   this.start = Date.now();
+  next();
+});
+
+// Retrieving the User documents corresponding to the IDs (when creating a Tour)
+tourSchema.pre('save', async function(next) {
+  // We have "guides" as the input, which is gonna be an array of all the user IDs, so we will loop through them
+  //We got an array "guidesPromises" full of Promises
+  const guidesPromises = this.guides.map(async id => await User.findById(id));
+  // Run all the promises at the same time
+  this.guides = await Promise.all(guidesPromises);
+
   next();
 });
 
