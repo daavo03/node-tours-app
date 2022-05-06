@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
-const User = require('./userModel');
+// const User = require('./userModel');
 // const validator = require('validator');
 
 const tourSchema = new mongoose.Schema(
@@ -112,10 +112,15 @@ const tourSchema = new mongoose.Schema(
         day: Number
       }
     ],
-    // Embedding user documents into the tour documents.
-    //Idea here is that when creating new Tour document, user will simply add an array of user IDs, then we will
-    //get the corresponding user documents and add them to our Tour documents
-    guides: Array
+    // Tours and Users remain separated entities in our DB, thus all we save on certain Tour document is the
+    //IDs of the users that are the tour guides for that specific tour only referencing
+    guides: [
+      {
+        // We expect a type of each of the elements in the guides array to be a MongoDB ID
+        type: mongoose.Schema.ObjectId,
+        ref: 'User'
+      }
+    ]
   },
   {
     toJSON: { virtuals: true },
@@ -151,6 +156,7 @@ tourSchema.pre(/^find/, function(next) {
   next();
 });
 
+/*
 // Retrieving the User documents corresponding to the IDs (when creating a Tour)
 tourSchema.pre('save', async function(next) {
   // We have "guides" as the input, which is gonna be an array of all the user IDs, so we will loop through them
@@ -161,6 +167,7 @@ tourSchema.pre('save', async function(next) {
 
   next();
 });
+*/
 
 tourSchema.post(/^find/, function(docs, next) {
   console.log(`Query took ${Date.now() - this.start} milliseconds!`);
