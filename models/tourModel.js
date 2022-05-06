@@ -169,6 +169,19 @@ tourSchema.pre('save', async function(next) {
 });
 */
 
+// Populate the guides in the Tours documents
+tourSchema.pre(/^find/, function(next) {
+  // The populate process always happens in a query. This populate replaces the ID with the actual data
+  this.populate({
+    // Name of the field to replace
+    path: 'guides',
+    // To not show certain fields
+    select: '-__v -passwordChangedAt'
+  });
+
+  next();
+});
+
 tourSchema.post(/^find/, function(docs, next) {
   console.log(`Query took ${Date.now() - this.start} milliseconds!`);
   next();
