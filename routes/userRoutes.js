@@ -6,16 +6,20 @@ const router = express.Router();
 
 router.post('/signup', authController.signup);
 router.post('/login', authController.login);
-
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 
-router.patch('/updateMyPassword', authController.protect, authController.updatePassword);
+// Protect all the routes that comes after this middleware
+router.use(authController.protect);
 
+router.patch('/updateMyPassword', authController.updatePassword);
 // Protect will add the user to the current request which will allow us to read the ID from that user
-router.get('/me', authController.protect, userController.getMe, userController.getUser);
-router.patch('/updateMe', authController.protect, userController.updateMe);
-router.delete('/deleteMe', authController.protect, userController.deleteMe);
+router.get('/me', userController.getMe, userController.getUser);
+router.patch('/updateMe', userController.updateMe);
+router.delete('/deleteMe', userController.deleteMe);
+
+// Only access to route if you're admin after this middleware
+router.use(authController.restrictTo('admin'));
 
 router
   .route('/')
