@@ -128,6 +128,12 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+// Index to not query all the DB improve Read performance, we pass to the index method, an object with the name of the field
+// tourSchema.index({ price: 1 });
+// Compound Index for fields that are query the most
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+
 tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7;
 });
