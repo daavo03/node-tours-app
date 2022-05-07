@@ -15,6 +15,13 @@ const filterObj = (obj, ...allowedFields) => {
   return newObj;
 };
 
+// Middleware for the user retrieving his own ID
+exports.getMe = (req, res, next) => {
+  // The "req.params.id" is what the "getOne" function is going to use and set it equal to "req.user.id"
+  req.params.id = req.user.id;
+  next();
+};
+
 // Updating Currently auth user
 exports.updateMe = catchAsync(async (req, res, next) => {
   // 1) Create an error if user tries to update password
