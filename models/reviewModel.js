@@ -35,15 +35,17 @@ const reviewSchema = new mongoose.Schema(
 );
 
 // Populate the tours in the Review documents
+//But because we're getting a lot of querys we only need to populate the user, we do not need the tours data on each review
 reviewSchema.pre(/^find/, function(next) {
   // The populate process always happens in a query. This populate replaces the ID with the actual data
+  //this.populate({
+  // Name of the field to replace
+  //path: 'tour',
+  // To show or not certain fields
+  //select: 'name'
+  // Populate the users in the Review documents
+  //})
   this.populate({
-    // Name of the field to replace
-    path: 'tour',
-    // To show or not certain fields
-    select: 'name'
-    // Populate the users in the Review documents
-  }).populate({
     path: 'user',
     select: 'name photo'
   });
