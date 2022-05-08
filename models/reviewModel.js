@@ -80,16 +80,24 @@ reviewSchema.statics.calcAverageRatings = async function(tourId) {
     }
   ]);
   // See if our stats is working
-  console.log(stats);
+  //console.log(stats);
 
-  // Persisting the statics in to each Tour document
-  //We need to find the current tour and then update it
-  await Tour.findByIdAndUpdate(tourId, {
-    // Object of the data that we actually want to update
-    //The stats are in an array, so we need to go to the 1st position of that array and from there we get the "nRating" prop
-    ratingsQuantity: stats[0].nRating,
-    ratingsAverage: stats[0].avgRating
-  });
+  // Only execute the code if we have something in the stats array
+  if (stats.length > 0) {
+    // Persisting the statics in to each Tour document
+    //We need to find the current tour and then update it
+    await Tour.findByIdAndUpdate(tourId, {
+      // Object of the data that we actually want to update
+      //The stats are in an array, so we need to go to the 1st position of that array and from there we get the "nRating" prop
+      ratingsQuantity: stats[0].nRating,
+      ratingsAverage: stats[0].avgRating
+    });
+  } else {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsQuantity: 0,
+      ratingsAverage: 4.5
+    });
+  }
 };
 
 // Calling the stats from a middleware, we use post instead of pre because all the docs are already saved in the DB,
@@ -98,6 +106,23 @@ reviewSchema.statics.calcAverageRatings = async function(tourId) {
 reviewSchema.post('save', function() {
   // this points to the current document and the constructor is basically the model who created that document
   this.constructor.calcAverageRatings(this.tour);
+});
+
+// Implementing pre-middleware for deleting-updating stats of a Tour
+reviewSchema.pre(/^findOneAnd/, async function(next) {
+  // Goal is to get access to the current Review document. So we can execute a query and that will give us the doc that
+  // is currently being processed
+  // this is current query variable which is use to store the current document as a property in the r
+  this.r = await this.findOne();
+  // console.log(this.r);
+  next();
+});
+
+// Now we need to use POST because is where the query has already finished and the review updated
+reviewSchema.post(/^findOneAnd/, async function() {
+  // Now at this point in time where we can call the function to calc the averages
+  // Also we get the tourId from passing data from the pre middleware to the post middleware
+  await this.r.constructor.calcAverageRatings(this.r.tour);
 });
 
 const Review = mongoose.model('Review', reviewSchema);
