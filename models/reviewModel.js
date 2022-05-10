@@ -35,6 +35,9 @@ const reviewSchema = new mongoose.Schema(
   }
 );
 
+// Compound Index for creating a combination of tour and user has always to be unique
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+
 // Populate the tours in the Review documents
 //But because we're getting a lot of querys we only need to populate the user, we do not need the tours data on each review
 reviewSchema.pre(/^find/, function(next) {
