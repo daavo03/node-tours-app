@@ -24,6 +24,9 @@ router
 // Route to know which tours starts at a certain distance from you
 router.route('/tours-within/:distance/center/:latlng/unit/:unit').get(tourController.getToursWithin);
 
+// Route to know distances to all the tours from a certain point
+router.route('/distances/:latlng/unit/:unit').get(tourController.getDistances);
+
 router
   .route('/')
   .get(tourController.getAllTours)
