@@ -81,7 +81,11 @@ app.use((req, res, next) => {
 // Creating route to access the template
 app.get('/', (req, res) => {
   // Rendering the template
-  res.status(200).render('base');
+  res.status(200).render('base', {
+    // Passing data
+    tour: 'The Forest Hiker',
+    user: 'Daniel'
+  });
 });
 
 app.use('/api/v1/tours', tourRouter);
