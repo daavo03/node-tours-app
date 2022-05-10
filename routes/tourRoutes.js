@@ -21,6 +21,9 @@ router
     tourController.getMonthlyPlan
   );
 
+// Route to know which tours starts at a certain distance from you
+router.route('/tours-within/:distance/center/:latlng/unit/:unit').get(tourController.getToursWithin);
+
 router
   .route('/')
   .get(tourController.getAllTours)

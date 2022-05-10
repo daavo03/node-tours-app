@@ -135,6 +135,10 @@ const tourSchema = new mongoose.Schema(
 // Compound Index for fields that are query the most
 tourSchema.index({ price: 1, ratingsAverage: -1 });
 tourSchema.index({ slug: 1 });
+// In order to do geospatial queries we need to first attribute an index to the field where the geospatial data
+//that we're searching for is stored. For geospatial data the index needs to be a 2D sphere index IF the data
+//describes real points on the Earth like sphere || 2D index IF we're using fictional points on a simple 2d plane
+tourSchema.index({ startLocation: '2dsphere' });
 
 tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7;

@@ -1,5 +1,6 @@
 const Tour = require('../models/tourModel');
 const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 const factory = require('./handlerFactory');
 
 exports.aliasTopTours = (req, res, next) => {
@@ -92,6 +93,38 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
     status: 'success',
     data: {
       plan
+    }
+  });
+});
+
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  // Using destructuring to get all our data at once from the params
+  const { distance, latlng, unit } = req.params;
+  // Get the coordinates from the latlng variable
+  const [lat, lng] = latlng.split(',');
+  // Defining the radius
+  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+
+  // Test if we got the lat lng var defined
+  if (!lat || !lng) {
+    next(new AppError('Please provide latitude and longitude in the format lat,lng.', 400));
+  }
+
+  // Writing Geospatial query
+  //Specifying the filter object. We want to query for 'startLocation' bc it's whats holds the geospatial point where
+  //each tour starts and the value we're searching for we'll use a geospatial operator "$geoWithin" - finds docs within
+  //a certain geometry
+  //We want to find docs inside of a sphere using $centerSphere which takes in an array of the 'lng', 'lat'
+  //and has a radius of the 'distance' we defined in radians
+  const tours = await Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } }
+  });
+
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    data: {
+      data: tours
     }
   });
 });
