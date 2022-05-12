@@ -1,24 +1,29 @@
 // Multer middleware handles multi-part form data, which is a form encoding that's used to upload files from a form
 const multer = require('multer');
+// Sharp middleware for resizing the images
+const sharp = require('sharp');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const factory = require('./handlerFactory');
 
-// Creating multer storage - How we want to store our files
-const multerStorage = multer.diskStorage({
-  // Destination here is a CB function
-  destination: (req, file, cb) => {
-    // Defining the destination we need to call the cb and 1st arg is an error if there's one, 2nd arg actual destination
-    cb(null, 'public/img/users');
-  },
-  filename: (req, file, cb) => {
-    // Getting the extension
-    const ext = file.mimetype.split('/')[1];
-    // Giving the files unique names
-    cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
-  }
-});
+// // Creating multer storage - How we want to store our files
+// const multerStorage = multer.diskStorage({
+//   // Destination here is a CB function
+//   destination: (req, file, cb) => {
+//     // Defining the destination we need to call the cb and 1st arg is an error if there's one, 2nd arg actual destination
+//     cb(null, 'public/img/users');
+//   },
+//   filename: (req, file, cb) => {
+//     // Getting the extension
+//     const ext = file.mimetype.split('/')[1];
+//     // Giving the files unique names
+//     cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
+//   }
+// });
+
+// When doing image processing best is to save image to memory
+const multerStorage = multer.memoryStorage();
 
 // Creating multer filter
 const multerFilter = (req, file, cb) => {
@@ -38,6 +43,29 @@ const upload = multer({
 
 // Using the multer upload to create middleware function upload.single() and we pass in the name of the field in the form
 exports.uploadUserPhoto = upload.single('photo');
+
+// Image processing middleware
+exports.resizeUserPhoto = (req, res, next) => {
+  // If there's no upload we don't want to do anything
+  if (!req.file) return next();
+
+  // Defining the filename
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+
+  // As image is stored in buffer, we passed it into the sharp
+  // Then we can chain multiple methods in order to do image processing in the new object
+  sharp(req.file.buffer)
+    // Resizing the image
+    .resize(500, 500)
+    // Convert images always to 'jpeg'
+    .toFormat('jpeg')
+    // Define the quality of the 'jpeg'
+    .jpeg({ quality: 90 })
+    // Write it to a file on our disk
+    .toFile(`public/img/users/${req.file.filename}`);
+
+  next();
+};
 
 // Creating function to filter the body
 const filterObj = (obj, ...allowedFields) => {

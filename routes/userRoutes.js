@@ -16,7 +16,7 @@ router.use(authController.protect);
 router.patch('/updateMyPassword', authController.updatePassword);
 // userController will add the user to the current request which will allow us to read the ID from that user
 router.get('/me', userController.getMe, userController.getUser);
-router.patch('/updateMe', userController.uploadUserPhoto, userController.updateMe);
+router.patch('/updateMe', userController.uploadUserPhoto, userController.resizeUserPhoto, userController.updateMe);
 router.delete('/deleteMe', userController.deleteMe);
 
 // Only access to route if you're admin after this middleware
