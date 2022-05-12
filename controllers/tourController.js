@@ -1,7 +1,38 @@
+const multer = require('multer');
+const sharp = require('sharp');
 const Tour = require('../models/tourModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const factory = require('./handlerFactory');
+
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('Not an image! Please upload only images.', 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter
+});
+
+// Using .fields bc accepts multiple fields at the same time, or .array bc we only have 1 field
+exports.uploadTourImages = upload.fields([
+  // Each element of the array is an object where we specify the field name and maxCount(we can only have 1 field name imageCover)
+  { name: 'imageCover', maxCount: 1 },
+  { name: 'images', maxCount: 3 }
+]);
+
+exports.resizeTourImages = (req, res, next) => {
+  // Multiple files are in req.files
+  console.log(req.files);
+
+  next();
+};
 
 exports.aliasTopTours = (req, res, next) => {
   req.query.limit = '5';
