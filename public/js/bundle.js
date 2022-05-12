@@ -8751,12 +8751,14 @@ if (loginForm) loginForm.addEventListener('submit', function (e) {
 if (logOutBtn) logOutBtn.addEventListener('click', _login.logout);
 if (userDataForm) userDataForm.addEventListener('submit', function (e) {
   e.preventDefault();
-  var name = document.getElementById('name').value;
-  var email = document.getElementById('email').value;
-  (0, _updateSettings.updateSettings)({
-    name: name,
-    email: email
-  }, 'data');
+  var form = new FormData(); // Into the new form keep appending new data
+
+  form.append('name', document.getElementById('name').value);
+  form.append('email', document.getElementById('email').value); // Now we use .files which are an array and since there's only 1
+
+  form.append('photo', document.getElementById('photo').files[0]); // Axios recognize "form" as object at work the same as before
+
+  (0, _updateSettings.updateSettings)(form, 'data');
 });
 if (userPasswordForm) userPasswordForm.addEventListener('submit',
 /*#__PURE__*/

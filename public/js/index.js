@@ -34,9 +34,15 @@ if (logOutBtn) logOutBtn.addEventListener('click', logout);
 if (userDataForm)
   userDataForm.addEventListener('submit', e => {
     e.preventDefault();
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    updateSettings({ name, email }, 'data');
+    const form = new FormData();
+    // Into the new form keep appending new data
+    form.append('name', document.getElementById('name').value);
+    form.append('email', document.getElementById('email').value);
+    // Now we use .files which are an array and since there's only 1
+    form.append('photo', document.getElementById('photo').files[0]);
+
+    // Axios recognize "form" as object at work the same as before
+    updateSettings(form, 'data');
   });
 
 if (userPasswordForm)
