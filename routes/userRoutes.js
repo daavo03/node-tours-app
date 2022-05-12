@@ -1,6 +1,14 @@
 const express = require('express');
+// Multer middleware handles multi-part form data, which is a form encoding that's used to upload files from a form
+const multer = require('multer');
 const userController = require('./../controllers/userController');
 const authController = require('./../controllers/authController');
+
+// Configuring multer upload
+const upload = multer({
+  // Destination to save all the images uploaded in our fs
+  dest: 'public/img/users'
+});
 
 const router = express.Router();
 
@@ -14,9 +22,10 @@ router.patch('/resetPassword/:token', authController.resetPassword);
 router.use(authController.protect);
 
 router.patch('/updateMyPassword', authController.updatePassword);
-// Protect will add the user to the current request which will allow us to read the ID from that user
+// userController will add the user to the current request which will allow us to read the ID from that user
 router.get('/me', userController.getMe, userController.getUser);
-router.patch('/updateMe', userController.updateMe);
+// Using the multer upload to create middleware function upload.single() and we pass in the name of the field in the form
+router.patch('/updateMe', upload.single('photo'), userController.updateMe);
 router.delete('/deleteMe', userController.deleteMe);
 
 // Only access to route if you're admin after this middleware
