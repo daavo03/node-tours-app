@@ -60,9 +60,6 @@ exports.getMe = (req, res, next) => {
 
 // Updating Currently auth user
 exports.updateMe = catchAsync(async (req, res, next) => {
-  console.log(req.file);
-  console.log(req.body);
-
   // 1) Create an error if user tries to update password
   if (req.body.password || req.body.passwordConfirm) {
     return next(new AppError('This route is not for password updates. Please use /updateMyPassword.', 400));
@@ -70,6 +67,8 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
   // 2) Filtering the body so that only contains fields we want to be updated
   const filteredBody = filterObj(req.body, 'name', 'email');
+  // Saving the actual name of the uploaded image to the corresponding updated user doc
+  if (req.file) filteredBody.photo = req.file.filename;
 
   // 3)Update user document
   //Since we're not dealing with passwords, we can now user "findByIdAndUpdate"
