@@ -45,7 +45,7 @@ const upload = multer({
 exports.uploadUserPhoto = upload.single('photo');
 
 // Image processing middleware
-exports.resizeUserPhoto = (req, res, next) => {
+exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
   // If there's no upload we don't want to do anything
   if (!req.file) return next();
 
@@ -54,7 +54,7 @@ exports.resizeUserPhoto = (req, res, next) => {
 
   // As image is stored in buffer, we passed it into the sharp
   // Then we can chain multiple methods in order to do image processing in the new object
-  sharp(req.file.buffer)
+  await sharp(req.file.buffer)
     // Resizing the image
     .resize(500, 500)
     // Convert images always to 'jpeg'
@@ -65,7 +65,7 @@ exports.resizeUserPhoto = (req, res, next) => {
     .toFile(`public/img/users/${req.file.filename}`);
 
   next();
-};
+});
 
 // Creating function to filter the body
 const filterObj = (obj, ...allowedFields) => {
