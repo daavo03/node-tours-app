@@ -1,6 +1,7 @@
 // Passing our secret key into the function exposed, which will give us a stripe object that we can work with
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Tour = require('../models/tourModel');
+const Booking = require('../models/bookingModel');
 const catchAsync = require('../utils/catchAsync');
 // const AppError = require('../utils/appError');
 // const factory = require('./handlerFactory');
@@ -14,7 +15,10 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     // Payment method types array where specify multiple types
     payment_method_types: ['card'],
     // URL that will get call as soon as a credit card has been successfully charged
-    success_url: `${req.protocol}://${req.get('host')}/`,
+    //Putting the data to create a new booking into this url as a query string (not secure all could create bookings w/o paying)
+    success_url: `${req.protocol}://${req.get('host')}/?tour=${req.params.tourId}&user=${req.user.id}&price=${
+      tour.price
+    }`,
     // Page where the user goes if they choose to cancel the current payment
     cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
     // As this is a protected route the user is already at the req
@@ -42,4 +46,19 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     status: 'success',
     session
   });
+});
+
+// Function to create new booking in DB (temporary)
+exports.createBookingCheckout = catchAsync(async (req, res, next) => {
+  // Getting data from query string
+  const { tour, user, price } = req.query;
+
+  // Only create new booking if all data above are specified
+  if (!tour && !user && !price) return next();
+
+  // Create new booking
+  await Booking.create({ tour, user, price });
+
+  // Securing the url, redirecting the app removing the querystring
+  res.redirect(req.originalUrl.split('?')[0]);
 });
