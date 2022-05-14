@@ -33,3 +33,12 @@ process.on('unhandledRejection', err => {
     process.exit(1);
   });
 });
+
+// SIGTERM event that can be emitted, our app receives and can then respond to
+process.on('SIGTERM', () => {
+  console.log('SIGTERM RECEIVED. Shutting down gracefully');
+  // Closing the server gracefully
+  server.close(() => {
+    console.log('Process terminated!');
+  });
+});
