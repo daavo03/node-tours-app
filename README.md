@@ -33,7 +33,9 @@ For development:
 
 # Access to the page
 
-You can access the deployed page via Login to test some of the features the app have with one of the following cases:
+You can access the deployed page via: https://tourappnatours.herokuapp.com/
+
+To login and test some of the features the app have, use one of the following cases:
 
 | Admin            |          |     | Users              |          |
 | ---------------- | -------- | --- | ------------------ | -------- |
