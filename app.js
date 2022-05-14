@@ -20,6 +20,9 @@ const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
 
+// Making our app trust proxys
+app.enable('trust proxy');
+
 // Specifying the template to use
 app.set('view engine', 'pug');
 // Defining where the views are located in our fs
