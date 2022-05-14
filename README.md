@@ -23,12 +23,17 @@ Built for learning purposes and mainly focus on the Backend API design part. Whe
 ## Run the project
 
 ```npm
-git clone 'x' && cd 'x' && npm i && npm start
+git clone https://github.com/daavo03/tours-app && cd tours-app && npm i && npm start
 ```
+
+For development:
+
+- In the URLs you'll need to add your host and port.
+- For the payments you can use as credit card number 4242 until fill up the field and the rest is at free will to fill
 
 # Access to the page
 
-You can access the page via Login to test some of the features the app have with one of the following cases:
+You can access the deployed page via Login to test some of the features the app have with one of the following cases:
 
 | Admin            |          |     | Users              |          |
 | ---------------- | -------- | --- | ------------------ | -------- |
